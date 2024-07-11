@@ -14,7 +14,7 @@ class Snake():
         self._isDead = False
         self._eatedFruit = False
 
-    def build(self):
+    def generate_position(self):
         self.last_col = len(self._scenario._total_cells) - 1
         self.last_row = len(self._scenario._total_cells[0]) - 1
 

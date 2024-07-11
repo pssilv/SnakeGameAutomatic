@@ -63,5 +63,5 @@ class Line:
 
     def draw(self, canvas, fill_color="blue"):
         canvas.create_line(
-            self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=4,
+            self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=2,
         )

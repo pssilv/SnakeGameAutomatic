@@ -1,7 +1,7 @@
 import sys
 sys.path.append("./game_files/")
 
-from entitybuilder import EntityBuilder
+from gamelogic import SnakeGame
 
 
 def main():
@@ -21,7 +21,7 @@ def main():
         print("The snake quantity is higher than available positions")
         snakes = int(input("Snake quantity: "))
 
-    EntityBuilder(rows, cols, snakes, fruits)
+    SnakeGame(rows, cols, snakes, fruits)
 
 
 main()

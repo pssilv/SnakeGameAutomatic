@@ -45,29 +45,29 @@ class Scenario:
 
         self.remove_walls()
 
-        cell_size = ((self._x2 - self._x1) / self._rows)
-        cell_col_size = ((self._y2 - self._y1) / self._cols)
+        self._cell_size = ((self._x2 - self._x1) / self._rows)
+        self._cell_col_size = ((self._y2 - self._y1) / self._cols)
 
         y1 = self._y1
-        y2 = self._y1 + cell_col_size
+        y2 = self._y1 + self._cell_col_size
 
         for cell_col in self._total_cells:
 
-            x1, x2 = self._x1, self._x1 + cell_size
+            x1, x2 = self._x1, self._x1 + self._cell_size
 
             for cell in cell_col:
                 cell.draw(x1, y1, x2, y2)
 
                 if cell != cell_col[-1]:
-                    x1, x2 = x1 + cell_size, x2 + cell_size
+                    x1, x2 = x1 + self._cell_size, x2 + self._cell_size
 
             if cell_col != self._total_cells[-1]:
-                y1, y2 = y1 + cell_col_size, y2 + cell_col_size
+                y1, y2 = y1 + self._cell_col_size, y2 + self._cell_col_size
 
     def remove_walls(self):
         for cell_col in self._total_cells:
             for cell in cell_col:
-                cell.has_right_wall = False
-                cell.has_left_wall = False
-                cell.has_bottom_wall = False
-                cell.has_top_wall = False
+                cell.has_right_wall = True
+                cell.has_left_wall = True
+                cell.has_bottom_wall = True
+                cell.has_top_wall = True
