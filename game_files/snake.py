@@ -21,4 +21,3 @@ class Snake():
         self._head_position = random.choice(
             self._entity_builder._available_positions
         )
-        print(self._head_position)

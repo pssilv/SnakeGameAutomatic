@@ -21,15 +21,9 @@ class Scenario:
         self._y2 = (self._height * 91.666 / 100) * 95 / 100
 
         # Build the map and add a listener for closing window
-        self.build()
+        self.draw_scenario()
 
-    def build(self):
-        self._area = Cell(self._win)
-        self._area.draw(self._x1, self._y1, self._x2, self._y2)
-
-        self.set_hitboxes()
-
-    def set_hitboxes(self):
+    def draw_scenario(self):
 
         self._total_cells = []
 
@@ -39,17 +33,16 @@ class Scenario:
 
             for cell in range(self._rows):
                 cell_set.append(Cell(self._win))
-                self._win.redraw()
 
             self._total_cells.append(cell_set)
-
-        self.remove_walls()
 
         self._cell_size = ((self._x2 - self._x1) / self._rows)
         self._cell_col_size = ((self._y2 - self._y1) / self._cols)
 
         y1 = self._y1
         y2 = self._y1 + self._cell_col_size
+
+        self.remove_walls()
 
         for cell_col in self._total_cells:
 
@@ -67,7 +60,25 @@ class Scenario:
     def remove_walls(self):
         for cell_col in self._total_cells:
             for cell in cell_col:
-                cell.has_right_wall = True
-                cell.has_left_wall = True
-                cell.has_bottom_wall = True
-                cell.has_top_wall = True
+                col_index = self._total_cells.index(cell_col)
+                row_index = cell_col.index(cell)
+
+                if col_index == 0:
+                    cell.has_bottom_wall = False
+
+                if col_index == self._cols - 1:
+                    cell.has_top_wall = False
+
+                if col_index > 0 and col_index < self._cols - 1:
+                    cell.has_top_wall = False
+                    cell.has_bottom_wall = False
+
+                if row_index == 0:
+                    cell.has_right_wall = False
+
+                if row_index == self._rows - 1:
+                    cell.has_left_wall = False
+
+                if row_index > 0 and row_index < self._rows - 1:
+                    cell.has_left_wall = False
+                    cell.has_right_wall = False
