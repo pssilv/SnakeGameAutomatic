@@ -40,6 +40,11 @@ class Window:
     def draw_line(self, line, fill_color="white"):
         line.draw(self.__canvas, fill_color)
 
+    def generate_polygon_color(self, points, color):
+        self.__canvas.create_polygon(
+            points, outline="black", fill=color, width=2
+        )
+
     def close(self):
         self.__running = False
 

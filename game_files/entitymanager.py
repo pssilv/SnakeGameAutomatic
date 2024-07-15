@@ -52,8 +52,8 @@ class EntityManager():
         entity_assigned_cell = self._scenario._total_cells[col][row]
         entity_cell = Cell(self._scenario._win)
 
-        factor_x = self._scenario._cell_size / 4
-        factor_y = self._scenario._cell_col_size / 4
+        factor_x = self._scenario._cell_size / 8
+        factor_y = self._scenario._cell_col_size / 8
 
         x1 = entity_assigned_cell._x1 + factor_x
         y1 = entity_assigned_cell._y1 + factor_y
@@ -61,7 +61,14 @@ class EntityManager():
         y2 = entity_assigned_cell._y2 - factor_y
 
         entity_cell.draw(x1, y1, x2, y2)
+        entity_cell.generate_color([x1, y1, x2, y2], "red")
         self._scenario._win.redraw()
+
+        eyes_drawed = False
+
+        if isinstance(entity, Snake) and eyes_drawed is False:
+            entity_cell.draw_eyes()
+            eyes_drawed = True
 
     def build_entities(self):
         for snake_instance in self._entities:

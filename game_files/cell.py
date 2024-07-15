@@ -43,3 +43,47 @@ class Cell:
             self._win.draw_line(Line(
                 Point(self._x1, self._y1), Point(self._x2, self._y1))
             )
+
+    def generate_color(self, points, color):
+        x1, y1, x2, y2 = points[0], points[1], points[2], points[3]
+
+        self._win.generate_polygon_color(
+            [x1, y1, x2, y1,
+             x2, y1, x2, y2,
+             x2, y2, x1, y2,
+             x1, y2, x1, y1,
+             ],
+            color
+        )
+
+    def draw_eyes(self):
+        delta_x = self._x2 - self._x1
+        delta_y = self._y2 - self._y1
+
+        left_eye_x = self._x1 + delta_x / 4
+        left_eye_y = self._y1 + delta_y / 4
+
+        right_eye_x = self._x2 - delta_x / 4
+        right_eye_y = self._y1 + delta_y / 4
+
+        self._win.draw_line(Line(
+            Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
+        )
+
+        self._win.draw_line(Line(
+            Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
+        )
+
+        self._win.draw_line(Line(
+            Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
+        )
+
+        self._win.draw_line(Line(
+            Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
+        )
+        # Left eye
+        self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
+                            "purple")
+        # Right eye
+        self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
+                            "purple")

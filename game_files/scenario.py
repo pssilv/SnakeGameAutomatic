@@ -15,10 +15,10 @@ class Scenario:
         self._height = self._resolution[1]
 
         # Optimzed for zoomed resolution
-        self._x1 = (self._width * 99.048 / 100) * 5 / 100
-        self._x2 = (self._width * 99.048 / 100) * 95 / 100
-        self._y1 = (self._height * 91.666 / 100) * 5 / 100
-        self._y2 = (self._height * 91.666 / 100) * 95 / 100
+        self._x1 = (self._width * 99.048 / 100) * 1 / 100
+        self._x2 = (self._width * 99.048 / 100) * 99 / 100
+        self._y1 = (self._height * 91.666 / 100) * 1 / 100
+        self._y2 = (self._height * 91.666 / 100) * 99 / 100
 
         # Build the map and add a listener for closing window
         self.draw_scenario()
