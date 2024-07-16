@@ -49,6 +49,10 @@ class Scenario:
             x1, x2 = self._x1, self._x1 + self._cell_size
 
             for cell in cell_col:
+                cell.has_top_wall = True
+                cell.has_bottom_wall = True
+                cell.has_right_wall = True
+                cell.has_left_wall = True
                 cell.draw(x1, y1, x2, y2)
 
                 if cell != cell_col[-1]:
