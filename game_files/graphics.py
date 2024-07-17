@@ -45,6 +45,11 @@ class Window:
             points, outline="black", fill=color, width=2
         )
 
+    def draw_oval(self, x1, y1, x2, y2, color):
+        self.__canvas.create_oval(x1, y1, x2, y2,
+                                  outline="black", fill=color,
+                                  width=2)
+
     def close(self):
         self.__running = False
 

@@ -88,3 +88,6 @@ class Cell:
         # Right eye
         self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
                             eye_color)
+
+    def draw_fruit(self, x1, y1, x2, y2):
+        self._win.draw_oval(x1, y1, x2, y2, "white")

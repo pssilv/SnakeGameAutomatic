@@ -73,39 +73,35 @@ class EntityManager():
         x2 = entity_assigned_cell._x2 - factor_x
         y2 = entity_assigned_cell._y2 - factor_y
 
-        entity_cell.draw(x1, y1, x2, y2)
-        entity_cell.generate_color([x1, y1, x2, y2], entity._color)
-        self._scenario._win.redraw()
-
-        eyes_drawed = False
-
-        if isinstance(entity, Snake) and eyes_drawed is False:
-            entity_cell.draw_eyes(entity._eyes_color)
+        if isinstance(entity, Snake):
+            entity_cell.draw(x1, y1, x2, y2)
+            entity_cell.generate_color([x1, y1, x2, y2], entity._color)
             self._scenario._win.redraw()
-            eyes_drawed = True
+            entity_cell.draw_eyes(entity._eyes_color)
+
+        elif isinstance(entity, Fruit):
+            entity_cell.draw_fruit(x1, y1, x2, y2)
+            self._scenario._win.redraw()
 
     def build_entities(self):
         for entity_instance in self._entities:
-            self._entities_ids[type(entity_instance).__name__] += 1
-            id = self._entities_ids[type(entity_instance).__name__]
+            entity_name = type(entity_instance).__name__
+            self._entities_ids[entity_name] += 1
+            id = self._entities_ids[entity_name]
+
+            entity_instance.generate_attributes()
 
             if isinstance(entity_instance, Snake):
-                entity_instance.generate_attributes()
-
                 self.del_choosed_position(entity_instance._head_position)
-                self.draw_entity(entity_instance)
-
                 position = entity_instance._head_position
-                print(f"Snake {id} generated at {position}")
 
             elif isinstance(entity_instance, Fruit):
-                entity_instance.generate_attributes()
-
                 self.del_choosed_position(entity_instance._pos)
-                self.draw_entity(entity_instance)
-
                 position = entity_instance._pos
-                print(f"Fruit {id} generated at {position}")
+
+            self.draw_entity(entity_instance)
+
+            print(f"{entity_name} {id} generated at {position}")
 
     def display_entities_data(self):
         print("===== Entities data =====")
