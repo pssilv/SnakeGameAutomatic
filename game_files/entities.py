@@ -6,6 +6,7 @@ class Snake():
     def __init__(self, entity_manager):
         #  Snake attributes
         self._head_position = None
+        self._body_parts_pos = []
         self._color = None
         self._eyes_color = None
         self._id = 0
@@ -15,6 +16,8 @@ class Snake():
         #  Snake events
         self._isDead = False
         self._eatedFruit = False
+        # Snake moving algorithm
+        self._path_to_fruit = []
 
     def generate_attributes(self):
         self._head_position = random.choice(
