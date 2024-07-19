@@ -11,6 +11,7 @@ class SnakeGame():
         self.set_fruit_list()
         self.set_snake_list()
         self.calculate_path_to_fruit()
+        self.move_snake_to_fruit()
 
         self._scenario._win.wait_for_close()
 
@@ -93,3 +94,37 @@ class SnakeGame():
                     snake._path_to_fruit.append( (current_location_y, current_location_x) )
 
             print(snake._path_to_fruit)
+
+    def move_snake_to_fruit(self):
+        for snake in self._snake_list:
+            for moves in range(0, len(snake._path_to_fruit)):
+                self.delete_snake_old_pos(snake)
+                snake._head_position = snake._path_to_fruit.pop(0)
+                print(snake._head_position)
+                self.entitymanager.draw_entity(snake)
+
+    def delete_snake_old_pos(self, entity):
+        col = entity._head_position[0]
+        row = entity._head_position[1]
+
+        entity_assigned_cell = self._scenario._total_cells[col][row]
+
+        factor_x = self._scenario._cell_size / 8
+        factor_y = self._scenario._cell_col_size / 8
+
+        x1 = entity_assigned_cell._x1 + factor_x
+        y1 = entity_assigned_cell._y1 + factor_y
+        x2 = entity_assigned_cell._x2 - factor_x
+        y2 = entity_assigned_cell._y2 - factor_y
+
+        entity_assigned_cell.generate_color([x1, y1, x2, y2], "black")
+
+        entity_assigned_cell.has_top_wall = False
+        entity_assigned_cell.has_bottom_wall = False
+        entity_assigned_cell.has_left_wall = False
+        entity_assigned_cell.has_right_wall = False
+
+        self._scenario._win.redraw()
+
+    def detect_walls(self):
+        pass

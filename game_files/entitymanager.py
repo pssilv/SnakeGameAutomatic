@@ -79,6 +79,11 @@ class EntityManager():
             self._scenario._win.redraw()
             entity_cell.draw_eyes(entity._eyes_color)
 
+            entity_cell.has_top_wall = True
+            entity_cell.has_bottom_wall = True
+            entity_cell.has_right_wall = True
+            entity_cell.has_left_wall = True
+
         elif isinstance(entity, Fruit):
             entity_cell.draw_fruit(x1, y1, x2, y2)
             self._scenario._win.redraw()

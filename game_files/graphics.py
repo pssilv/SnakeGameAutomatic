@@ -42,13 +42,16 @@ class Window:
 
     def generate_polygon_color(self, points, color):
         self.__canvas.create_polygon(
-            points, outline="black", fill=color, width=2
+            points, outline="black", fill=color, width=1
         )
 
     def draw_oval(self, x1, y1, x2, y2, color):
         self.__canvas.create_oval(x1, y1, x2, y2,
                                   outline="black", fill=color,
-                                  width=2)
+                                  width=1)
+
+    def delete_polygon(self, polygon):
+        self.__canvas.delete(polygon)
 
     def close(self):
         self.__running = False
@@ -73,5 +76,5 @@ class Line:
 
     def draw(self, canvas, fill_color="blue"):
         canvas.create_line(
-            self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=2,
+            self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=1,
         )
