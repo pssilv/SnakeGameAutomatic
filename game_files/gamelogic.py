@@ -1,6 +1,7 @@
 from scenario import Scenario
 from entitymanager import EntityManager
 from entities import Snake, Fruit
+import time
 
 
 class SnakeGame():
@@ -11,7 +12,6 @@ class SnakeGame():
         self.set_fruit_list()
         self.set_snake_list()
         self.calculate_path_to_fruit()
-        self.move_snake_to_fruit()
 
         self._scenario._win.wait_for_close()
 
@@ -56,52 +56,30 @@ class SnakeGame():
         for snake_and_fruit in self.find_the_nearest_fruit():
             snake, fruit = snake_and_fruit[0], snake_and_fruit[1]
 
-            snake_pos_y = snake._head_position[0]
-            snake_pos_x = snake._head_position[1]
             fruit_pos_y = fruit._pos[0]
             fruit_pos_x = fruit._pos[1]
 
-            diff_y = fruit_pos_y - snake_pos_y
-            diff_x = fruit_pos_x - snake_pos_x
+            while snake._head_position[0] != fruit_pos_y or snake._head_position[1] != fruit_pos_x:
 
-            movements_y = []
-            movements_x = []
+                self.detect_others_snakes(snake)
+                self.calculate_available_paths(snake, fruit)
 
-            if diff_y < 0:
-                for actual_y_pos in range(snake_pos_y, fruit_pos_y, -1):
-                    movements_y.append(-1)
-            else:
-                for actual_y_pos in range(snake_pos_y, fruit_pos_y):
-                    movements_y.append(1)
+                print(f"Actual position: {snake._head_position[0], snake._head_position[1]}")
+                snake._past_movement.append( (snake._head_position[0], snake._head_position[1]) )
+                snake._past_movement.pop(0)
 
-            if diff_x < 0:
-                for actual_x_pos in range(snake_pos_x, fruit_pos_x, -1):
-                    movements_x.append(-1)
-            else:
-                for actual_x_pos in range(snake_pos_x, fruit_pos_x):
-                    movements_x.append(1)
+                snake._path_to_fruit.append(self._available_paths.pop(0))
+                self.move_snake_to_fruit(snake)
+                print(f"Past movement: {snake._past_movement}")
 
-            current_location_y = snake._head_position[0]
-            current_location_x = snake._head_position[1]
+    def move_snake_to_fruit(self, snake):
+        self.delete_snake_old_pos(snake)
 
-            while current_location_y != fruit_pos_y or current_location_x != fruit_pos_x:
-                if len(movements_y) > 0:
-                    current_location_y += movements_y.pop(0)
-                    snake._path_to_fruit.append( (current_location_y, current_location_x) )
+        snake._head_position = snake._path_to_fruit.pop(0)
+        print(f"Head position: {snake._head_position}")
 
-                if len(movements_x) > 0:
-                    current_location_x += movements_x.pop(0)
-                    snake._path_to_fruit.append( (current_location_y, current_location_x) )
-
-            print(snake._path_to_fruit)
-
-    def move_snake_to_fruit(self):
-        for snake in self._snake_list:
-            for moves in range(0, len(snake._path_to_fruit)):
-                self.delete_snake_old_pos(snake)
-                snake._head_position = snake._path_to_fruit.pop(0)
-                print(snake._head_position)
-                self.entitymanager.draw_entity(snake)
+        self.entitymanager.draw_entity(snake)
+        time.sleep(0.5)
 
     def delete_snake_old_pos(self, entity):
         col = entity._head_position[0]
@@ -119,12 +97,75 @@ class SnakeGame():
 
         entity_assigned_cell.generate_color([x1, y1, x2, y2], "black")
 
-        entity_assigned_cell.has_top_wall = False
-        entity_assigned_cell.has_bottom_wall = False
-        entity_assigned_cell.has_left_wall = False
-        entity_assigned_cell.has_right_wall = False
-
         self._scenario._win.redraw()
 
-    def detect_walls(self):
-        pass
+    def detect_others_snakes(self, snake):
+        self._occupied_positions = []
+
+        scenario_limits_y = [-1, len(self._scenario._total_cells)]
+        scenario_limits_x = [-1, len(self._scenario._total_cells[0])]
+
+        for other_snake in self._snake_list:
+            if other_snake._id != snake._id:
+                self._occupied_positions.append(other_snake._head_position)
+
+        for limits_y in scenario_limits_y:
+            self._occupied_positions.append(scenario_limits_y)
+
+        for limits_x in scenario_limits_x:
+            self._occupied_positions.append(scenario_limits_x)
+
+        print(f"Occupied positions: {self._occupied_positions}")
+
+    def calculate_available_paths(self, snake, fruit):
+        next_move_y = self.update_next_move(snake._head_position[0], fruit._pos[0])
+        next_move_x = self.update_next_move(snake._head_position[1], fruit._pos[1])
+
+        head_pos_y = snake._head_position[0]
+        head_pos_x = snake._head_position[1]
+
+        moves = []
+        self._available_paths = []
+
+        if (head_pos_y + 1, head_pos_x) not in self._occupied_positions:
+            moves.append( (head_pos_y + 1, head_pos_x) )
+
+        if (head_pos_y - 1, head_pos_x) not in self._occupied_positions:
+            moves.append( (head_pos_y - 1, head_pos_x) )
+
+        if (head_pos_y, head_pos_x + 1) not in self._occupied_positions:
+            moves.append( (head_pos_y, head_pos_x + 1) )
+
+        if (head_pos_y, head_pos_x - 1) not in self._occupied_positions:
+            moves.append( (head_pos_y, head_pos_x - 1) )
+
+        if snake._past_movement[-1] in moves:
+            past_path = moves.index(snake._past_movement[-1])
+            del moves[past_path]
+
+        for move in moves:
+            if move == (head_pos_y + next_move_y, head_pos_x):
+                self._available_paths.append(move)
+                move_index = moves.index(move)
+                del moves[move_index]
+
+            if move == (head_pos_y, head_pos_x + next_move_x):
+                self._available_paths.append(move)
+                move_index = moves.index(move)
+                del moves[move_index]
+
+        for move in moves:
+            self._available_paths.append(move)
+
+        print(f"Available paths: {self._available_paths}")
+        print(f"moves: {moves}")
+
+    def update_next_move(self, head_pos, fruit_pos):
+        if head_pos != fruit_pos:
+            delta = fruit_pos - head_pos
+
+            if delta > 0:
+                return 1
+            elif delta < 0:
+                return -1
+        return 0

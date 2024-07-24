@@ -18,6 +18,8 @@ class Snake():
         self._eatedFruit = False
         # Snake moving algorithm
         self._path_to_fruit = []
+        self._past_movement = [(None, None)]
+        self._moves = []
 
     def generate_attributes(self):
         self._head_position = random.choice(

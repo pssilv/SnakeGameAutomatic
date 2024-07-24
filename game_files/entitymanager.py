@@ -76,13 +76,14 @@ class EntityManager():
         if isinstance(entity, Snake):
             entity_cell.draw(x1, y1, x2, y2)
             entity_cell.generate_color([x1, y1, x2, y2], entity._color)
-            self._scenario._win.redraw()
             entity_cell.draw_eyes(entity._eyes_color)
 
             entity_cell.has_top_wall = True
             entity_cell.has_bottom_wall = True
             entity_cell.has_right_wall = True
             entity_cell.has_left_wall = True
+
+            self._scenario._win.redraw()
 
         elif isinstance(entity, Fruit):
             entity_cell.draw_fruit(x1, y1, x2, y2)
