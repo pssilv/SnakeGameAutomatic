@@ -56,7 +56,7 @@ class Cell:
             color
         )
 
-    def draw_eyes(self, eye_color):
+    def draw_eyes(self, eye_color, direction):
         delta_x = self._x2 - self._x1
         delta_y = self._y2 - self._y1
 
@@ -66,28 +66,103 @@ class Cell:
         right_eye_x = self._x2 - delta_x / 3
         right_eye_y = self._y1 + delta_y / 3
 
-        self._win.draw_line(Line(
-            Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
-        )
+        print(f"The direction is: {direction}")
 
-        self._win.draw_line(Line(
-            Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
-        )
+        if direction == "up":
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
+            )
 
-        self._win.draw_line(Line(
-            Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
-        )
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
+            )
 
-        self._win.draw_line(Line(
-            Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
-        )
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
+            )
 
-        # Left eye
-        self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
-                            eye_color)
-        # Right eye
-        self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
-                            eye_color)
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
+            )
+
+            # Left eye
+            self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
+                                eye_color)
+            # Right eye
+            self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
+                                eye_color)
+
+        elif direction == "down":
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
+            )
+
+            # Left eye
+            self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
+                                eye_color)
+            # Right eye
+            self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
+                                eye_color)
+
+        elif direction == "right":
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
+            )
+
+            # Left eye
+            self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
+                                eye_color)
+            # Right eye
+            self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
+                                eye_color)
+
+        elif direction == "left":
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(left_eye_x, left_eye_y), Point(left_eye_x, self._y1))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(self._x2, right_eye_y))
+            )
+
+            self._win.draw_line(Line(
+                Point(right_eye_x, right_eye_y), Point(right_eye_x, self._y1))
+            )
+
+            # Left eye
+            self.generate_color([self._x1, self._y1, left_eye_x, left_eye_y],
+                                eye_color)
+            # Right eye
+            self.generate_color([self._x2, self._y1, right_eye_x, right_eye_y],
+                                eye_color)
 
     def draw_fruit(self, x1, y1, x2, y2):
         self._win.draw_oval(x1, y1, x2, y2, "white")

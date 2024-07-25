@@ -76,7 +76,7 @@ class EntityManager():
         if isinstance(entity, Snake):
             entity_cell.draw(x1, y1, x2, y2)
             entity_cell.generate_color([x1, y1, x2, y2], entity._color)
-            entity_cell.draw_eyes(entity._eyes_color)
+            entity_cell.draw_eyes(entity._eyes_color, entity._direction)
 
             entity_cell.has_top_wall = True
             entity_cell.has_bottom_wall = True

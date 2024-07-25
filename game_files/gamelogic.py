@@ -2,6 +2,7 @@ from scenario import Scenario
 from entitymanager import EntityManager
 from entities import Snake, Fruit
 import time
+import random
 
 
 class SnakeGame():
@@ -65,12 +66,17 @@ class SnakeGame():
                 self.calculate_available_paths(snake, fruit)
 
                 print(f"Actual position: {snake._head_position[0], snake._head_position[1]}")
-                snake._past_movement.append( (snake._head_position[0], snake._head_position[1]) )
-                snake._past_movement.pop(0)
 
-                snake._path_to_fruit.append(self._available_paths.pop(0))
-                self.move_snake_to_fruit(snake)
+                snake._past_movement = (snake._head_position[0], snake._head_position[1])
                 print(f"Past movement: {snake._past_movement}")
+
+                if len(snake._available_paths) > 0:
+                    snake._path_to_fruit.append(snake._available_paths[0])
+                    self.get_direction(snake)
+                    self.move_snake_to_fruit(snake)
+                else:
+                    print("Snaked died!")
+                    break
 
     def move_snake_to_fruit(self, snake):
         self.delete_snake_old_pos(snake)
@@ -79,7 +85,7 @@ class SnakeGame():
         print(f"Head position: {snake._head_position}")
 
         self.entitymanager.draw_entity(snake)
-        time.sleep(0.5)
+        time.sleep(0.25)
 
     def delete_snake_old_pos(self, entity):
         col = entity._head_position[0]
@@ -102,18 +108,9 @@ class SnakeGame():
     def detect_others_snakes(self, snake):
         self._occupied_positions = []
 
-        scenario_limits_y = [-1, len(self._scenario._total_cells)]
-        scenario_limits_x = [-1, len(self._scenario._total_cells[0])]
-
         for other_snake in self._snake_list:
             if other_snake._id != snake._id:
                 self._occupied_positions.append(other_snake._head_position)
-
-        for limits_y in scenario_limits_y:
-            self._occupied_positions.append(scenario_limits_y)
-
-        for limits_x in scenario_limits_x:
-            self._occupied_positions.append(scenario_limits_x)
 
         print(f"Occupied positions: {self._occupied_positions}")
 
@@ -124,8 +121,11 @@ class SnakeGame():
         head_pos_y = snake._head_position[0]
         head_pos_x = snake._head_position[1]
 
+        scenario_limits_y = [-1, len(self._scenario._total_cells)]
+        scenario_limits_x = [-1, len(self._scenario._total_cells[0])]
+
         moves = []
-        self._available_paths = []
+        snake._available_paths = []
 
         if (head_pos_y + 1, head_pos_x) not in self._occupied_positions:
             moves.append( (head_pos_y + 1, head_pos_x) )
@@ -139,26 +139,44 @@ class SnakeGame():
         if (head_pos_y, head_pos_x - 1) not in self._occupied_positions:
             moves.append( (head_pos_y, head_pos_x - 1) )
 
-        if snake._past_movement[-1] in moves:
-            past_path = moves.index(snake._past_movement[-1])
+        if snake._past_movement in moves:
+            past_path = moves.index(snake._past_movement)
             del moves[past_path]
 
         for move in moves:
             if move == (head_pos_y + next_move_y, head_pos_x):
-                self._available_paths.append(move)
+                snake._available_paths.append(move)
                 move_index = moves.index(move)
                 del moves[move_index]
 
             if move == (head_pos_y, head_pos_x + next_move_x):
-                self._available_paths.append(move)
+                snake._available_paths.append(move)
                 move_index = moves.index(move)
                 del moves[move_index]
 
-        for move in moves:
-            self._available_paths.append(move)
+        while len(moves) > 0:
+            move = random.choice(moves)
+            move_index = moves.index(move)
 
-        print(f"Available paths: {self._available_paths}")
-        print(f"moves: {moves}")
+            snake._available_paths.append(move)
+            del moves[move_index]
+
+        for path in snake._available_paths:
+            path_index = snake._available_paths.index(path)
+
+            limit_y_passed = False
+            limit_x_passed = False
+
+            if path[0] <= scenario_limits_y[0] or path[0] >= scenario_limits_y[1]:
+                limit_y_passed = True
+
+            if path[1] <= scenario_limits_x[0] or path[1] >= scenario_limits_x[1]:
+                limit_x_passed = True
+
+            if limit_y_passed or limit_x_passed:
+                del snake._available_paths[path_index]
+
+        print(f"Available paths: {snake._available_paths}")
 
     def update_next_move(self, head_pos, fruit_pos):
         if head_pos != fruit_pos:
@@ -169,3 +187,18 @@ class SnakeGame():
             elif delta < 0:
                 return -1
         return 0
+
+    def get_direction(self, snake):
+        next_move = snake._available_paths[0]
+        head_pos = snake._head_position
+        if (next_move[0] - head_pos[0]) == 1:
+            snake._direction = "down"
+
+        elif (next_move[1] - head_pos[1]) == 1:
+            snake._direction = "right"
+
+        elif (next_move[0] - head_pos[0]) == -1:
+            snake._direction = "up"
+
+        elif (next_move[1] - head_pos[1]) == -1:
+            snake._direction = "left"
