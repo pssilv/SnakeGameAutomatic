@@ -21,7 +21,7 @@ def main():
 
     available_slots -= snakes
 
-    print(f"You have: {available_slots} positions for generating snakes")
+    print(f"You have: {available_slots} positions for generating fruits")
     fruits = int(input("Fruit generators quantity: "))
 
     if fruits > available_slots:

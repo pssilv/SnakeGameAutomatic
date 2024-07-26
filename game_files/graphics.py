@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import ctypes
+import queue
 
 
 try:  # Windows 8.1 and later
@@ -14,13 +15,13 @@ except:  # Windows 8 or before
 
 class Window:
     def __init__(self):
-        self.__root = Tk()
-        self.__height = self.__root.winfo_screenheight()
-        self.__width = self.__root.winfo_screenwidth()
-        self.__root.title("Snake Game")
-        self.__root.attributes("-zoomed", True)
-        self.__root.protocol("WM_DELETE_WINDOW", self.close)
-        self.__canvas = Canvas(self.__root,
+        self.root = Tk()
+        self.__height = self.root.winfo_screenheight()
+        self.__width = self.root.winfo_screenwidth()
+        self.root.title("Snake Game")
+        self.root.attributes("-zoomed", True)
+        self.root.protocol("WM_DELETE_WINDOW", self.close)
+        self.__canvas = Canvas(self.root,
                                bg="black",
                                height=self.__height,
                                width=self.__width)
@@ -28,8 +29,8 @@ class Window:
         self.__running = False
 
     def redraw(self):
-        self.__root.update_idletasks()
-        self.__root.update()
+        self.root.update_idletasks()
+        self.root.update()
 
     def wait_for_close(self):
         self.__running = True

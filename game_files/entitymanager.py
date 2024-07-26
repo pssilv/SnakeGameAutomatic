@@ -36,9 +36,6 @@ class EntityManager():
 
             self._entities.append(entity)
 
-    def remove_entity(self, entity):
-        self._entities.remove(entity)
-
     def update_entity(self, event):
         pass
 

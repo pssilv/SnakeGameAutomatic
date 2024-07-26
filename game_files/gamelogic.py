@@ -12,7 +12,11 @@ class SnakeGame():
 
         self.set_fruit_list()
         self.set_snake_list()
-        self.calculate_path_to_fruit()
+
+        while len(self._snake_list) > 1:
+            for snake in self._snake_list:
+                self.snake_main_movement(snake)
+                time.sleep(0.01)
 
         self._scenario._win.wait_for_close()
 
@@ -32,60 +36,52 @@ class SnakeGame():
             if isinstance(entity, Snake):
                 self._snake_list.append(entity)
 
-    def find_the_nearest_fruit(self):
+    def set_free_paths(self):
+        self._free_paths = []
 
-        for snake in self._snake_list:
-            closest_fruit_y = float("inf")
-            closest_fruit_x = float("inf")
+        for col in range(0, self._scenario._cols):
+            for row in range(0, self._scenario._rows):
+                self._free_paths.append( (col, row) )
 
-            for fruit in self._fruit_list:
-                fruit_dist_y = abs(snake._head_position[0] - fruit._pos[0])
-                fruit_dist_x = abs(snake._head_position[1] - fruit._pos[1])
+    def find_the_nearest_fruit(self, snake):
 
-                total_fruit_dist = closest_fruit_y + closest_fruit_x
+        closest_fruit_y = float("inf")
+        closest_fruit_x = float("inf")
 
-                if (fruit_dist_y + fruit_dist_x) < total_fruit_dist:
-                    print(f"Fruit {fruit._id}")
-                    closest_fruit_y = fruit_dist_y
-                    closest_fruit_x = fruit_dist_x
-                    fruit_index = self._fruit_list.index(fruit)
+        for fruit in self._fruit_list:
+            fruit_dist_y = abs(snake._head_position[0] - fruit._pos[0])
+            fruit_dist_x = abs(snake._head_position[1] - fruit._pos[1])
 
-            print(f"Snake {snake._id}")
-            yield snake, self._fruit_list[fruit_index]
+            total_fruit_dist = closest_fruit_y + closest_fruit_x
 
-    def calculate_path_to_fruit(self):
-        for snake_and_fruit in self.find_the_nearest_fruit():
-            snake, fruit = snake_and_fruit[0], snake_and_fruit[1]
+            if (fruit_dist_y + fruit_dist_x) < total_fruit_dist:
+                closest_fruit_y = fruit_dist_y
+                closest_fruit_x = fruit_dist_x
+                fruit_index = self._fruit_list.index(fruit)
 
-            fruit_pos_y = fruit._pos[0]
-            fruit_pos_x = fruit._pos[1]
+        return self._fruit_list[fruit_index]
 
-            while snake._head_position[0] != fruit_pos_y or snake._head_position[1] != fruit_pos_x:
+    def snake_main_movement(self, snake):
+        fruit = self.find_the_nearest_fruit(snake)
 
-                self.detect_others_snakes(snake)
-                self.calculate_available_paths(snake, fruit)
+        if snake._head_position[0] != fruit._pos[0] or snake._head_position[1] != fruit._pos[1]:
+            self.calculate_available_paths(snake, fruit)
 
-                print(f"Actual position: {snake._head_position[0], snake._head_position[1]}")
+            snake._past_movement = (snake._head_position[0], snake._head_position[1])
 
-                snake._past_movement = (snake._head_position[0], snake._head_position[1])
-                print(f"Past movement: {snake._past_movement}")
-
-                if len(snake._available_paths) > 0:
-                    snake._path_to_fruit.append(snake._available_paths[0])
-                    self.get_direction(snake)
-                    self.move_snake_to_fruit(snake)
-                else:
-                    print("Snaked died!")
-                    break
+            if len(snake._available_paths) > 0:
+                snake._path_to_fruit.append(snake._available_paths[0])
+                self.move_snake_to_fruit(snake)
+            else:
+                print(f"Snake {snake._id} died!")
+                self.remove_entity(snake)
 
     def move_snake_to_fruit(self, snake):
         self.delete_snake_old_pos(snake)
 
         snake._head_position = snake._path_to_fruit.pop(0)
-        print(f"Head position: {snake._head_position}")
 
         self.entitymanager.draw_entity(snake)
-        time.sleep(0.25)
 
     def delete_snake_old_pos(self, entity):
         col = entity._head_position[0]
@@ -105,38 +101,36 @@ class SnakeGame():
 
         self._scenario._win.redraw()
 
-    def detect_others_snakes(self, snake):
-        self._occupied_positions = []
+    def update_available_paths(self, snake):
+        self.set_free_paths()
 
-        for other_snake in self._snake_list:
-            if other_snake._id != snake._id:
-                self._occupied_positions.append(other_snake._head_position)
-
-        print(f"Occupied positions: {self._occupied_positions}")
+        for snake in self._snake_list:
+            if snake._head_position in self._free_paths:
+                head_index = self._free_paths.index(snake._head_position)
+                del self._free_paths[head_index]
 
     def calculate_available_paths(self, snake, fruit):
+        self.update_available_paths(snake)
+
         next_move_y = self.update_next_move(snake._head_position[0], fruit._pos[0])
         next_move_x = self.update_next_move(snake._head_position[1], fruit._pos[1])
 
         head_pos_y = snake._head_position[0]
         head_pos_x = snake._head_position[1]
 
-        scenario_limits_y = [-1, len(self._scenario._total_cells)]
-        scenario_limits_x = [-1, len(self._scenario._total_cells[0])]
-
         moves = []
         snake._available_paths = []
 
-        if (head_pos_y + 1, head_pos_x) not in self._occupied_positions:
+        if (head_pos_y + 1, head_pos_x) in self._free_paths:
             moves.append( (head_pos_y + 1, head_pos_x) )
 
-        if (head_pos_y - 1, head_pos_x) not in self._occupied_positions:
+        if (head_pos_y - 1, head_pos_x) in self._free_paths:
             moves.append( (head_pos_y - 1, head_pos_x) )
 
-        if (head_pos_y, head_pos_x + 1) not in self._occupied_positions:
+        if (head_pos_y, head_pos_x + 1) in self._free_paths:
             moves.append( (head_pos_y, head_pos_x + 1) )
 
-        if (head_pos_y, head_pos_x - 1) not in self._occupied_positions:
+        if (head_pos_y, head_pos_x - 1) in self._free_paths:
             moves.append( (head_pos_y, head_pos_x - 1) )
 
         if snake._past_movement in moves:
@@ -161,22 +155,11 @@ class SnakeGame():
             snake._available_paths.append(move)
             del moves[move_index]
 
-        for path in snake._available_paths:
-            path_index = snake._available_paths.index(path)
+        self.get_direction(snake)
 
-            limit_y_passed = False
-            limit_x_passed = False
-
-            if path[0] <= scenario_limits_y[0] or path[0] >= scenario_limits_y[1]:
-                limit_y_passed = True
-
-            if path[1] <= scenario_limits_x[0] or path[1] >= scenario_limits_x[1]:
-                limit_x_passed = True
-
-            if limit_y_passed or limit_x_passed:
-                del snake._available_paths[path_index]
-
-        print(f"Available paths: {snake._available_paths}")
+        if snake._past_movement in snake._available_paths:
+            past_index = snake._available_paths.index(snake._past_movement)
+            del snake._available_paths[past_index]
 
     def update_next_move(self, head_pos, fruit_pos):
         if head_pos != fruit_pos:
@@ -189,16 +172,35 @@ class SnakeGame():
         return 0
 
     def get_direction(self, snake):
-        next_move = snake._available_paths[0]
         head_pos = snake._head_position
+
+        if len(snake._available_paths) > 0:
+            next_move = snake._available_paths[0]
+        else:
+            next_move = (0, 0)
+
         if (next_move[0] - head_pos[0]) == 1:
             snake._direction = "down"
+            snake._past_movement = (head_pos[0] - 1, head_pos[1])
 
         elif (next_move[1] - head_pos[1]) == 1:
             snake._direction = "right"
+            snake._past_movement = (head_pos[0], head_pos[1] - 1)
 
         elif (next_move[0] - head_pos[0]) == -1:
             snake._direction = "up"
+            snake._past_movement = (head_pos[0] + 1, head_pos[1])
 
         elif (next_move[1] - head_pos[1]) == -1:
             snake._direction = "left"
+            snake._past_movement = (head_pos[0], head_pos[1] + 1)
+
+    def remove_entity(self, entity):
+        if isinstance(entity, Snake):
+            self.delete_snake_old_pos(entity)
+            self.delete_snake_old_pos(entity)
+            self.delete_snake_old_pos(entity)
+            self._snake_list.remove(entity)
+
+        elif isinstance(entity, Fruit):
+            self._fruit_list.remove(entity)
