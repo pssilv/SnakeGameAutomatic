@@ -32,6 +32,11 @@ class Window:
         self.root.update_idletasks()
         self.root.update()
 
+    def wait_for_close(self):
+        while self.__running:
+            self.redraw()
+        print("Window closed")
+
     def draw_line(self, line, fill_color="white"):
         line.draw(self.__canvas, fill_color)
 
@@ -41,9 +46,18 @@ class Window:
         )
 
     def draw_oval(self, x1, y1, x2, y2, color):
-        self.__canvas.create_oval(x1, y1, x2, y2,
-                                  outline="black", fill=color,
-                                  width=1)
+        return (
+            self.__canvas.create_oval(x1, y1, x2, y2,
+                                      outline="black", fill=color,
+                                      width=1)
+        )
+
+    def draw_rectangle(self, x1, y1, x2, y2, color):
+        return (
+            self.__canvas.create_rectangle(x1, y1, x2, y2,
+                                           outline="black", fill=color,
+                                           width=1)
+        )
 
     def delete_polygon(self, polygon):
         self.__canvas.delete(polygon)

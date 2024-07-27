@@ -19,8 +19,10 @@ class Snake():
         # Snake moving algorithm
         self._path_to_fruit = []
         self._past_movement = (None, None)
+        self._past_polygons = None
+
         self._available_paths = []
-        self._direction = "up"
+        self._direction = None
 
     def generate_attributes(self):
         self._head_position = random.choice(
@@ -37,6 +39,8 @@ class Fruit():
         self._pos = None
         self._color = None
         self._id = 0
+
+        self._past_polygons = None
 
         # game attributes
         self._entity_manager = entity_manager

@@ -9,7 +9,7 @@ class SnakeGame():
         self._scenario = Scenario(rows, cols)
         self.entitymanager = EntityManager(rows, cols, snakeQ, fruitG, self)
 
-        while len(self.entitymanager._snake_list) > 1:
+        while len(self.entitymanager._snake_list) > 0:
             for snake in self.entitymanager._snake_list:
                 if self._scenario._win.get_is_running() is True:
                     self.snake_main_movement(snake)
@@ -17,13 +17,14 @@ class SnakeGame():
                     break
 
             if self._scenario._win.get_is_running() is False:
-                print("Window closed")
                 break
 
             time.sleep(0.1)
 
         if len(self.entitymanager._snake_list) == 1:
             print(f"Snake {self.entitymanager._snake_list[0]._id} winned the game!")
+
+        self._scenario._win.wait_for_close()
 
     def find_the_nearest_fruit(self, snake):
         closest_fruit_y = float("inf")
@@ -43,6 +44,7 @@ class SnakeGame():
         return self.entitymanager._fruit_list[fruit_index]
 
     def snake_main_movement(self, snake):
+        self.delete_entity_old_polygon(snake)
         fruit = self.find_the_nearest_fruit(snake)
         self.calculate_available_paths(snake, fruit)
 
@@ -57,27 +59,12 @@ class SnakeGame():
             self.remove_snake(snake)
 
     def move_snake_to_fruit(self, snake):
-        self.delete_snake_old_pos(snake)
-
         snake._head_position = snake._path_to_fruit.pop(0)
 
         self.entitymanager.draw_entity(snake)
 
-    def delete_snake_old_pos(self, entity):
-        col = entity._head_position[0]
-        row = entity._head_position[1]
-
-        entity_assigned_cell = self._scenario._total_cells[col][row]
-
-        factor_x = self._scenario._cell_size / 8
-        factor_y = self._scenario._cell_col_size / 8
-
-        x1 = entity_assigned_cell._x1 + factor_x
-        y1 = entity_assigned_cell._y1 + factor_y
-        x2 = entity_assigned_cell._x2 - factor_x
-        y2 = entity_assigned_cell._y2 - factor_y
-
-        entity_assigned_cell.generate_color([x1, y1, x2, y2], "black")
+    def delete_entity_old_polygon(self, polygon):
+        self.entitymanager.delete_entity_polygon(polygon)
 
         self._scenario._win.redraw()
 
@@ -168,10 +155,11 @@ class SnakeGame():
             snake._past_movement = (head_pos[0], head_pos[1] + 1)
 
     def remove_snake(self, snake):
-        self.delete_snake_old_pos(snake)
+        self.delete_entity_old_polygon(snake)
         self.entitymanager._snake_list.remove(snake)
 
     def fruit_eated_listener(self, snake):
         for fruit in self.entitymanager._fruit_list:
             if fruit._pos == snake._head_position:
+                self.delete_entity_old_polygon(fruit)
                 self.entitymanager.regenerate_fruit(fruit)

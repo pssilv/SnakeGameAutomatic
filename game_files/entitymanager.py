@@ -16,6 +16,8 @@ class EntityManager():
         self._total_ids = 0
         self._entities_ids = {}
         self._entities = []
+        self.entity_cell_list = []
+
         self._snake_list = []
         self._fruit_list = []
 
@@ -59,7 +61,7 @@ class EntityManager():
 
         fruit._pos = random.choice(self._respawn_positions)
 
-        print(f"fruit {fruit._id} regenerated at {fruit._pos}")
+        # print(f"fruit {fruit._id} regenerated at {fruit._pos}")
 
         self.draw_entity(fruit)
 
@@ -95,19 +97,13 @@ class EntityManager():
         y2 = entity_assigned_cell._y2 - factor_y
 
         if isinstance(entity, Snake):
-            entity_cell.draw(x1, y1, x2, y2)
-            entity_cell.generate_color([x1, y1, x2, y2], entity._color)
-            entity_cell.draw_eyes(entity._eyes_color, entity._direction)
-
-            entity_cell.has_top_wall = True
-            entity_cell.has_bottom_wall = True
-            entity_cell.has_right_wall = True
-            entity_cell.has_left_wall = True
+            entity_cell.draw_snake_head(x1, y1, x2, y2, entity)
 
             self._scenario._win.redraw()
 
         elif isinstance(entity, Fruit):
-            entity_cell.draw_fruit(x1, y1, x2, y2)
+            entity_cell.draw_fruit(x1, y1, x2, y2, entity)
+
             self._scenario._win.redraw()
 
     def build_entities(self):
@@ -135,6 +131,14 @@ class EntityManager():
     def fix_fruit_ids(self):
         for fruit_id in range(1, self._entities_ids["Fruit"] + 1):
             self._fruit_list[fruit_id - 1]._id = fruit_id
+
+    def delete_entity_polygon(self, entity):
+        if isinstance(entity, Snake):
+            for key in entity._past_polygons:
+                self._scenario._win.delete_polygon(entity._past_polygons[key])
+
+        elif isinstance(entity, Fruit):
+            self._scenario._win.delete_polygon(entity._past_polygons["fruit"])
 
     def display_entities_data(self):
         print("===== Entities data =====")
