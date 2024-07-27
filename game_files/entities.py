@@ -24,7 +24,7 @@ class Snake():
 
     def generate_attributes(self):
         self._head_position = random.choice(
-            self._entity_manager._available_positions
+            self._scenario._available_positions
         )
 
         self._color = pick_random_color()
@@ -42,12 +42,9 @@ class Fruit():
         self._entity_manager = entity_manager
         self._scenario = entity_manager._scenario
 
-        # Fruit events
-        self._isEated = False
-
     def generate_attributes(self):
         self._pos = random.choice(
-            self._entity_manager._available_positions
+            self._scenario._available_positions
         )
 
         self._color = "white"

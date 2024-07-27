@@ -1,5 +1,6 @@
 from entities import Snake, Fruit
 from cell import Cell
+import random
 # Entities will be listeners too
 
 
@@ -15,12 +16,17 @@ class EntityManager():
         self._total_ids = 0
         self._entities_ids = {}
         self._entities = []
+        self._snake_list = []
+        self._fruit_list = []
 
         # Methods to generate positions and add entities
-        self.generate_available_positions()
+        self._scenario.generate_available_positions()
         self.add_entity(Snake, snakeQ)
         self.add_entity(Fruit, fruitG)
+
         self.build_entities()
+        self.fix_fruit_ids()
+
         self.display_entities_data()
 
     def add_entity(self, entity_type, quantity):
@@ -36,19 +42,37 @@ class EntityManager():
 
             self._entities.append(entity)
 
-    def update_entity(self, event):
-        pass
+            if isinstance(entity, Fruit):
+                self._fruit_list.append(entity)
 
-    def generate_available_positions(self):
-        self._available_positions = []
+            elif isinstance(entity, Snake):
+                self._snake_list.append(entity)
 
-        for col in range(0, self._cols):
-            for row in range(0, self._rows):
-                self._available_positions.append((col, row))
+    def regenerate_fruit(self, fruit):
+        self.update_available_positions()
+
+        self._respawn_positions = self._scenario._available_positions
+
+        for fruit_entity in self._fruit_list:
+            if fruit_entity._pos in self._respawn_positions:
+                self._respawn_positions.remove(fruit_entity._pos)
+
+        fruit._pos = random.choice(self._respawn_positions)
+
+        print(f"fruit {fruit._id} regenerated at {fruit._pos}")
+
+        self.draw_entity(fruit)
 
     def del_choosed_position(self, position):
-        pos = self._available_positions.index(position)
-        del self._available_positions[pos]
+        pos = self._scenario._available_positions.index(position)
+        del self._scenario._available_positions[pos]
+
+    def update_available_positions(self):
+        self._scenario.generate_available_positions()
+
+        for snake in self._snake_list:
+            if snake._head_position in self._scenario._available_positions:
+                self.del_choosed_position(snake._head_position)
 
     def draw_entity(self, entity):
         if isinstance(entity, Snake):
@@ -105,6 +129,12 @@ class EntityManager():
             self.draw_entity(entity_instance)
 
             print(f"{entity_name} {id} generated at {position}")
+
+        self._entities = []
+
+    def fix_fruit_ids(self):
+        for fruit_id in range(1, self._entities_ids["Fruit"] + 1):
+            self._fruit_list[fruit_id - 1]._id = fruit_id
 
     def display_entities_data(self):
         print("===== Entities data =====")

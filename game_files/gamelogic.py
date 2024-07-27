@@ -1,6 +1,5 @@
 from scenario import Scenario
 from entitymanager import EntityManager
-from entities import Snake, Fruit
 import time
 import random
 
@@ -10,45 +9,27 @@ class SnakeGame():
         self._scenario = Scenario(rows, cols)
         self.entitymanager = EntityManager(rows, cols, snakeQ, fruitG, self)
 
-        self.set_fruit_list()
-        self.set_snake_list()
+        while len(self.entitymanager._snake_list) > 1:
+            for snake in self.entitymanager._snake_list:
+                if self._scenario._win.get_is_running() is True:
+                    self.snake_main_movement(snake)
+                else:
+                    break
 
-        while len(self._snake_list) > 1:
-            for snake in self._snake_list:
-                self.snake_main_movement(snake)
-                time.sleep(0.01)
+            if self._scenario._win.get_is_running() is False:
+                print("Window closed")
+                break
 
-        self._scenario._win.wait_for_close()
+            time.sleep(0.1)
 
-    # You need to define the list attribute inside method or else the window will close
-    def set_fruit_list(self):
-        self._fruit_list = []
-
-        for entity in self.entitymanager._entities:
-            if isinstance(entity, Fruit):
-                self._fruit_list.append(entity)
-
-    def set_snake_list(self):
-        self._snake_list = []
-
-        # structure: self.snake_pos_list = {"snake 1": {"head_pos": (0, 0), "body_parts_pos": [1,1, 1,2]} }
-        for entity in self.entitymanager._entities:
-            if isinstance(entity, Snake):
-                self._snake_list.append(entity)
-
-    def set_free_paths(self):
-        self._free_paths = []
-
-        for col in range(0, self._scenario._cols):
-            for row in range(0, self._scenario._rows):
-                self._free_paths.append( (col, row) )
+        if len(self.entitymanager._snake_list) == 1:
+            print(f"Snake {self.entitymanager._snake_list[0]._id} winned the game!")
 
     def find_the_nearest_fruit(self, snake):
-
         closest_fruit_y = float("inf")
         closest_fruit_x = float("inf")
 
-        for fruit in self._fruit_list:
+        for fruit in self.entitymanager._fruit_list:
             fruit_dist_y = abs(snake._head_position[0] - fruit._pos[0])
             fruit_dist_x = abs(snake._head_position[1] - fruit._pos[1])
 
@@ -57,24 +38,23 @@ class SnakeGame():
             if (fruit_dist_y + fruit_dist_x) < total_fruit_dist:
                 closest_fruit_y = fruit_dist_y
                 closest_fruit_x = fruit_dist_x
-                fruit_index = self._fruit_list.index(fruit)
+                fruit_index = self.entitymanager._fruit_list.index(fruit)
 
-        return self._fruit_list[fruit_index]
+        return self.entitymanager._fruit_list[fruit_index]
 
     def snake_main_movement(self, snake):
         fruit = self.find_the_nearest_fruit(snake)
+        self.calculate_available_paths(snake, fruit)
 
-        if snake._head_position[0] != fruit._pos[0] or snake._head_position[1] != fruit._pos[1]:
-            self.calculate_available_paths(snake, fruit)
+        snake._past_movement = (snake._head_position[0], snake._head_position[1])
 
-            snake._past_movement = (snake._head_position[0], snake._head_position[1])
-
-            if len(snake._available_paths) > 0:
-                snake._path_to_fruit.append(snake._available_paths[0])
-                self.move_snake_to_fruit(snake)
-            else:
-                print(f"Snake {snake._id} died!")
-                self.remove_entity(snake)
+        if len(snake._available_paths) > 0:
+            snake._path_to_fruit.append(snake._available_paths[0])
+            self.move_snake_to_fruit(snake)
+            self.fruit_eated_listener(snake)
+        else:
+            print(f"Snake {snake._id} died!")
+            self.remove_snake(snake)
 
     def move_snake_to_fruit(self, snake):
         self.delete_snake_old_pos(snake)
@@ -101,16 +81,8 @@ class SnakeGame():
 
         self._scenario._win.redraw()
 
-    def update_available_paths(self, snake):
-        self.set_free_paths()
-
-        for snake in self._snake_list:
-            if snake._head_position in self._free_paths:
-                head_index = self._free_paths.index(snake._head_position)
-                del self._free_paths[head_index]
-
     def calculate_available_paths(self, snake, fruit):
-        self.update_available_paths(snake)
+        self.entitymanager.update_available_positions()
 
         next_move_y = self.update_next_move(snake._head_position[0], fruit._pos[0])
         next_move_x = self.update_next_move(snake._head_position[1], fruit._pos[1])
@@ -121,16 +93,16 @@ class SnakeGame():
         moves = []
         snake._available_paths = []
 
-        if (head_pos_y + 1, head_pos_x) in self._free_paths:
+        if (head_pos_y + 1, head_pos_x) in self._scenario._available_positions:
             moves.append( (head_pos_y + 1, head_pos_x) )
 
-        if (head_pos_y - 1, head_pos_x) in self._free_paths:
+        if (head_pos_y - 1, head_pos_x) in self._scenario._available_positions:
             moves.append( (head_pos_y - 1, head_pos_x) )
 
-        if (head_pos_y, head_pos_x + 1) in self._free_paths:
+        if (head_pos_y, head_pos_x + 1) in self._scenario._available_positions:
             moves.append( (head_pos_y, head_pos_x + 1) )
 
-        if (head_pos_y, head_pos_x - 1) in self._free_paths:
+        if (head_pos_y, head_pos_x - 1) in self._scenario._available_positions:
             moves.append( (head_pos_y, head_pos_x - 1) )
 
         if snake._past_movement in moves:
@@ -195,12 +167,11 @@ class SnakeGame():
             snake._direction = "left"
             snake._past_movement = (head_pos[0], head_pos[1] + 1)
 
-    def remove_entity(self, entity):
-        if isinstance(entity, Snake):
-            self.delete_snake_old_pos(entity)
-            self.delete_snake_old_pos(entity)
-            self.delete_snake_old_pos(entity)
-            self._snake_list.remove(entity)
+    def remove_snake(self, snake):
+        self.delete_snake_old_pos(snake)
+        self.entitymanager._snake_list.remove(snake)
 
-        elif isinstance(entity, Fruit):
-            self._fruit_list.remove(entity)
+    def fruit_eated_listener(self, snake):
+        for fruit in self.entitymanager._fruit_list:
+            if fruit._pos == snake._head_position:
+                self.entitymanager.regenerate_fruit(fruit)

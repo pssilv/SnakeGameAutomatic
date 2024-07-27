@@ -26,17 +26,11 @@ class Window:
                                height=self.__height,
                                width=self.__width)
         self.__canvas.pack(fill=BOTH, expand=1)
-        self.__running = False
+        self.__running = True
 
     def redraw(self):
         self.root.update_idletasks()
         self.root.update()
-
-    def wait_for_close(self):
-        self.__running = True
-        while self.__running:
-            self.redraw()
-        print("Window closed")
 
     def draw_line(self, line, fill_color="white"):
         line.draw(self.__canvas, fill_color)
@@ -56,6 +50,9 @@ class Window:
 
     def close(self):
         self.__running = False
+
+    def get_is_running(self):
+        return self.__running
 
     def get_display_size(self):
         #  print(f"{self.__width} x {self.__height}")

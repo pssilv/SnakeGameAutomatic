@@ -21,6 +21,8 @@ class Scenario:
         self._y2 = (self._height * 91.666 / 100) * 99 / 100
 
         # Build the map and add a listener for closing window
+        self.generate_available_positions()
+
         self.draw_scenario()
 
     def draw_scenario(self):
@@ -82,3 +84,10 @@ class Scenario:
                 if row_index > 0 and row_index < self._rows - 1:
                     cell.has_left_wall = False
                     cell.has_right_wall = False
+
+    def generate_available_positions(self):
+        self._available_positions = []
+
+        for col in range(0, self._cols):
+            for row in range(0, self._rows):
+                self._available_positions.append((col, row))

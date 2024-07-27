@@ -66,8 +66,6 @@ class Cell:
         right_eye_x = self._x2 - delta_x / 3
         right_eye_y = self._y1 + delta_y / 3
 
-        print(f"The direction is: {direction}")
-
         if direction == "up":
             self._win.draw_line(Line(
                 Point(left_eye_x, left_eye_y), Point(self._x1, left_eye_y))
