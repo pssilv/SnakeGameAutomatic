@@ -1,4 +1,12 @@
 # SnakeGame
+recommended settings: 50 x 50, 10 snakes and 20 fruits.
+
+Remember to click on fullscreen button because i tried to put -zoomed resolution and works fine on WSL Ubuntu but on CMD its give a bad attribute error.
+
+To run this:
+1. Open CMD
+2. type "cd path_to_folder"
+3. type "python main.py"
 
 The game will have a custom map size, snake quantity, fruit generators and an algorithm to make snakes move to fruits, avoid walls and avoid bodies of other snakes.
 
@@ -13,4 +21,3 @@ The game will end when theres only 1 snake alive.
 Still being developed.
 
 Done for now, the algorithm to move snakes isn't too good and tkinter rendering is very slow but you can still see its working.
-recommended settings: 50 x 50, 10 snakes and 20 fruits
