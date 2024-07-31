@@ -19,7 +19,7 @@ class Window:
         self.__height = self.root.winfo_screenheight()
         self.__width = self.root.winfo_screenwidth()
         self.root.title("Snake Game")
-        self.root.attributes("-zoomed", True)
+        self.root.attributes("-alpha", True)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.__canvas = Canvas(self.root,
                                bg="black",
