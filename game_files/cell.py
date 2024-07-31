@@ -15,8 +15,8 @@ class Cell:
         self._y2 = None
 
         self._win = win
-        self.snake_polygon = {"snake": {"head": None, "body": None,
-                              "left_eye": None, "right_eye": None}}
+        self.snake_polygon = {"head": None, "body": [],
+                              "left_eye": None, "right_eye": None}
         self.fruit_polygon = {"fruit": None}
 
     def draw(self, x1, y1, x2, y2):
@@ -48,18 +48,6 @@ class Cell:
             self._win.draw_line(Line(
                 Point(self._x1, self._y1), Point(self._x2, self._y1))
             )
-
-    def generate_color(self, points, color):
-        x1, y1, x2, y2 = points[0], points[1], points[2], points[3]
-
-        self._win.generate_polygon_color(
-            [x1, y1, x2, y1,
-             x2, y1, x2, y2,
-             x2, y2, x1, y2,
-             x1, y2, x1, y1,
-             ],
-            color
-        )
 
     def draw_eyes(self, x1, y1, x2, y2, eye_color, direction):
         delta_x = x2 - x1
@@ -151,5 +139,9 @@ class Cell:
 
         snake._past_polygons = self.snake_polygon
 
-    def draw_snake_body(self, x1, y1, x2, y2, body_color):
-        self._win.draw_rectangle(x1, y1, x2, y2, body_color)
+    def draw_snake_body(self, x1, y1, x2, y2, snake):
+        self.snake_polygon["body"].append(
+            self._win.draw_rectangle(x1, y1, x2, y2, snake._color)
+        )
+
+        snake._past_polygons["body"] = self.snake_polygon["body"]

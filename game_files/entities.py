@@ -19,7 +19,9 @@ class Snake():
         # Snake moving algorithm
         self._path_to_fruit = []
         self._past_movement = (None, None)
-        self._past_polygons = None
+        self._past_polygons = {"head": None, "body": [],
+                              "left_eye": None, "right_eye": None}
+
 
         self._available_paths = []
         self._direction = None

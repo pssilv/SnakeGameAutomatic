@@ -9,7 +9,8 @@ class SnakeGame():
         self._scenario = Scenario(rows, cols)
         self.entitymanager = EntityManager(rows, cols, snakeQ, fruitG, self)
 
-        while len(self.entitymanager._snake_list) > 0:
+        game_iterations = 0
+        while len(self.entitymanager._snake_list) > 1:
             for snake in self.entitymanager._snake_list:
                 if self._scenario._win.get_is_running() is True:
                     self.snake_main_movement(snake)
@@ -19,10 +20,12 @@ class SnakeGame():
             if self._scenario._win.get_is_running() is False:
                 break
 
+            game_iterations += 1
             time.sleep(0.1)
 
         if len(self.entitymanager._snake_list) == 1:
             print(f"Snake {self.entitymanager._snake_list[0]._id} winned the game!")
+            print(f"Total iterations: {game_iterations}")
 
         self._scenario._win.wait_for_close()
 
@@ -44,7 +47,6 @@ class SnakeGame():
         return self.entitymanager._fruit_list[fruit_index]
 
     def snake_main_movement(self, snake):
-        self.delete_entity_old_polygon(snake)
         fruit = self.find_the_nearest_fruit(snake)
         self.calculate_available_paths(snake, fruit)
 
@@ -52,6 +54,7 @@ class SnakeGame():
 
         if len(snake._available_paths) > 0:
             snake._path_to_fruit.append(snake._available_paths[0])
+
             self.move_snake_to_fruit(snake)
             self.fruit_eated_listener(snake)
         else:
@@ -59,14 +62,12 @@ class SnakeGame():
             self.remove_snake(snake)
 
     def move_snake_to_fruit(self, snake):
+        self.entitymanager.delete_entity_polygon(snake)
         snake._head_position = snake._path_to_fruit.pop(0)
 
+        self.update_snake_body_size(snake)
+
         self.entitymanager.draw_entity(snake)
-
-    def delete_entity_old_polygon(self, polygon):
-        self.entitymanager.delete_entity_polygon(polygon)
-
-        self._scenario._win.redraw()
 
     def calculate_available_paths(self, snake, fruit):
         self.entitymanager.update_available_positions()
@@ -81,16 +82,16 @@ class SnakeGame():
         snake._available_paths = []
 
         if (head_pos_y + 1, head_pos_x) in self._scenario._available_positions:
-            moves.append( (head_pos_y + 1, head_pos_x) )
+            moves.append((head_pos_y + 1, head_pos_x))
 
         if (head_pos_y - 1, head_pos_x) in self._scenario._available_positions:
-            moves.append( (head_pos_y - 1, head_pos_x) )
+            moves.append((head_pos_y - 1, head_pos_x))
 
         if (head_pos_y, head_pos_x + 1) in self._scenario._available_positions:
-            moves.append( (head_pos_y, head_pos_x + 1) )
+            moves.append((head_pos_y, head_pos_x + 1))
 
         if (head_pos_y, head_pos_x - 1) in self._scenario._available_positions:
-            moves.append( (head_pos_y, head_pos_x - 1) )
+            moves.append((head_pos_y, head_pos_x - 1))
 
         if snake._past_movement in moves:
             past_path = moves.index(snake._past_movement)
@@ -136,7 +137,7 @@ class SnakeGame():
         if len(snake._available_paths) > 0:
             next_move = snake._available_paths[0]
         else:
-            next_move = (0, 0)
+            next_move = (-1, -1)
 
         if (next_move[0] - head_pos[0]) == 1:
             snake._direction = "down"
@@ -155,11 +156,61 @@ class SnakeGame():
             snake._past_movement = (head_pos[0], head_pos[1] + 1)
 
     def remove_snake(self, snake):
-        self.delete_entity_old_polygon(snake)
+        self.entitymanager.delete_entity_polygon(snake)
         self.entitymanager._snake_list.remove(snake)
 
     def fruit_eated_listener(self, snake):
         for fruit in self.entitymanager._fruit_list:
             if fruit._pos == snake._head_position:
-                self.delete_entity_old_polygon(fruit)
+                self.increase_snake(snake)
                 self.entitymanager.regenerate_fruit(fruit)
+
+                if fruit._pos == snake._head_position:
+                    self.entitymanager.delete_entity_polygon(fruit)
+
+    def increase_snake(self, snake):
+
+        if len(snake._body_parts_pos) == 0:
+            snake._body_parts_pos = [snake._past_movement]
+
+        elif len(snake._body_parts_pos) == 1:
+            body_part = snake._body_parts_pos[0]
+
+            if snake._head_position[0] - body_part[0] == 1:
+                snake._body_parts_pos.append((body_part[0] - 1, body_part[1]))
+
+            elif snake._head_position[0] - body_part[0] == -1:
+                snake._body_parts_pos.append((body_part[0] + 1, body_part[1]))
+
+            elif snake._head_position[1] - body_part[1] == 1:
+                snake._body_parts_pos.append((body_part[0], body_part[1] - 1))
+
+            elif snake._head_position[1] - body_part[1] == -1:
+                snake._body_parts_pos.append((body_part[0], body_part[1] + 1))
+
+        elif len(snake._body_parts_pos) > 1:
+            body_part = snake._body_parts_pos[-1]
+            to_move = snake._body_parts_pos[-2]
+
+            if to_move[0] - body_part[0] == 1:
+                snake._body_parts_pos.append((body_part[0] - 1, body_part[1]))
+
+            elif to_move[0] - body_part[0] == -1:
+                snake._body_parts_pos.append((body_part[0] + 1, body_part[1]))
+
+            elif to_move[1] - body_part[1] == 1:
+                snake._body_parts_pos.append((body_part[0], body_part[1] - 1))
+
+            elif to_move[1] - body_part[1] == -1:
+                snake._body_parts_pos.append((body_part[0], body_part[1] + 1))
+
+    def update_snake_body_size(self, snake):
+        snake_body_copy = []
+        for body_part in snake._body_parts_pos:
+            snake_body_copy.append(body_part)
+
+        for i in range(0, len(snake._body_parts_pos)):
+            if i == 0:
+                snake._body_parts_pos[0] = snake._past_movement
+            else:
+                snake._body_parts_pos[i] = snake_body_copy[i - 1]

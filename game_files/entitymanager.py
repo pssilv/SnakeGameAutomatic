@@ -51,17 +51,19 @@ class EntityManager():
                 self._snake_list.append(entity)
 
     def regenerate_fruit(self, fruit):
-        self.update_available_positions()
+        self.delete_entity_polygon(fruit)
 
+        self.update_available_positions()
         self._respawn_positions = self._scenario._available_positions
 
         for fruit_entity in self._fruit_list:
             if fruit_entity._pos in self._respawn_positions:
                 self._respawn_positions.remove(fruit_entity._pos)
 
-        fruit._pos = random.choice(self._respawn_positions)
+        if len(self._respawn_positions) > 0:
+            fruit._pos = random.choice(self._respawn_positions)
 
-        # print(f"fruit {fruit._id} regenerated at {fruit._pos}")
+            # print(f"fruit {fruit._id} regenerated at {fruit._pos}")
 
         self.draw_entity(fruit)
 
@@ -76,6 +78,11 @@ class EntityManager():
             if snake._head_position in self._scenario._available_positions:
                 self.del_choosed_position(snake._head_position)
 
+        for snake in self._snake_list:
+            for body_part in snake._body_parts_pos:
+                if body_part in self._scenario._available_positions:
+                    self.del_choosed_position(body_part)
+
     def draw_entity(self, entity):
         if isinstance(entity, Snake):
             col = entity._head_position[0]
@@ -88,8 +95,8 @@ class EntityManager():
         entity_assigned_cell = self._scenario._total_cells[col][row]
         entity_cell = Cell(self._scenario._win)
 
-        factor_x = self._scenario._cell_size / 8
-        factor_y = self._scenario._cell_col_size / 8
+        factor_x = self._scenario._cell_size / 16
+        factor_y = self._scenario._cell_col_size / 16
 
         x1 = entity_assigned_cell._x1 + factor_x
         y1 = entity_assigned_cell._y1 + factor_y
@@ -99,9 +106,26 @@ class EntityManager():
         if isinstance(entity, Snake):
             entity_cell.draw_snake_head(x1, y1, x2, y2, entity)
 
+            for body_part in entity._body_parts_pos:
+                entity_assigned_cell = (
+                    self._scenario._total_cells[body_part[0]][body_part[1]]
+                )
+
+                x1 = entity_assigned_cell._x1 + factor_x
+                y1 = entity_assigned_cell._y1 + factor_y
+                x2 = entity_assigned_cell._x2 - factor_x
+                y2 = entity_assigned_cell._y2 - factor_y
+
+                entity_cell.draw_snake_body(x1, y1, x2, y2, entity)
+
             self._scenario._win.redraw()
 
         elif isinstance(entity, Fruit):
+            x1 = entity_assigned_cell._x1 + factor_x * 2
+            y1 = entity_assigned_cell._y1 + factor_y * 2
+            x2 = entity_assigned_cell._x2 - factor_x * 2
+            y2 = entity_assigned_cell._y2 - factor_y * 2
+
             entity_cell.draw_fruit(x1, y1, x2, y2, entity)
 
             self._scenario._win.redraw()
@@ -135,7 +159,12 @@ class EntityManager():
     def delete_entity_polygon(self, entity):
         if isinstance(entity, Snake):
             for key in entity._past_polygons:
-                self._scenario._win.delete_polygon(entity._past_polygons[key])
+                if key != "body":
+                    self._scenario._win.delete_polygon(entity._past_polygons[key])
+                else:
+                    for body_part in entity._past_polygons[key]:
+                        entity._past_polygons
+                        self._scenario._win.delete_polygon(body_part)
 
         elif isinstance(entity, Fruit):
             self._scenario._win.delete_polygon(entity._past_polygons["fruit"])
