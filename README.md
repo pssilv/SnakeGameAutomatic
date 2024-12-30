@@ -22,4 +22,4 @@ Still being developed.
 
 Done for now, the algorithm to move snakes isn't too good and tkinter rendering is very slow but you can still see its working.
 
-Contributing
+## Contributing
