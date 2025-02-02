@@ -6,7 +6,8 @@ Remember to click on fullscreen button because i tried to put -zoomed resolution
 To run this:
 1. Open CMD
 2. type "cd path_to_folder"
-3. type "python main.py"
+3. type "python main.py""pypy main.py"
+4. (optional) instead of using doing step 3 type "pypy main.py" for a more fluid experience
 
 The game will have a custom map size, snake quantity, fruit generators and an algorithm to make snakes move to fruits, avoid walls and avoid bodies of other snakes.
 
